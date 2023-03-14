@@ -53,11 +53,9 @@ public class GameUtil {
 
             return function.apply(element);
         } catch (Exception e) {
-            // if xpath is not empty then remove
             if (StringUtils.isNotEmpty(xpath)) {
-                elementMap.remove(xpath);
+                elementMap.clear();
             }
-//            elementMap.remove(xpath);
             return false;
         }
 

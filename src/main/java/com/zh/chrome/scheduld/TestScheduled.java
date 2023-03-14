@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Log4j2
 @Component
@@ -26,8 +27,15 @@ public class TestScheduled {
     @Resource
     SourceBuyUtil sourceBuyUtil;
 
+    // define Atomic boolean name is stop
+    public static final AtomicBoolean stop = new AtomicBoolean(false);
+
     @Scheduled(fixedDelay = 60, initialDelay = 40, timeUnit = TimeUnit.SECONDS)
     public void buySimple() {
+
+        if (stop.get()) {
+            return;
+        }
 
         // if 木材 is full and speed gt 10 then buy all 胶合板
         if (leftTabUtil.isFull("木材") && leftTabUtil.getSpeed("木材") > 10) {
@@ -67,6 +75,7 @@ public class TestScheduled {
             choseBuy("石头");
             choseBuy("食物");
             choseBuy("毛皮");
+            choseBuy("铜");
             choseBuy("钢");
         }
     }

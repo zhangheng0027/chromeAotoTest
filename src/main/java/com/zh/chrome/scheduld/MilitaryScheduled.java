@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Log4j2
 @Component
@@ -26,8 +27,21 @@ public class MilitaryScheduled {
     // define Atomic boolean name is occupied
     private static final AtomicBoolean occupied = new AtomicBoolean(false);
 
-    @Scheduled(fixedDelay = 120, initialDelay = 50, timeUnit = TimeUnit.SECONDS)
+    // define public Atomic boolean name is stop
+    public static final AtomicBoolean stop = new AtomicBoolean(false);
+
+
+    // define Atomic Integer count
+    private static final AtomicInteger count = new AtomicInteger(9);
+
+
+    @Scheduled(fixedDelay = 30, initialDelay = 20, timeUnit = TimeUnit.SECONDS)
     public void military() {
+
+        if ((!occupied.get() && count.get() < 10) || stop.get()) {
+            count.incrementAndGet();
+            return;
+        }
 
         // lock LOCK_Handle
         synchronized (GameLock.LOCK_Handle) {
@@ -49,10 +63,16 @@ public class MilitaryScheduled {
             }
 
             noWarNumber = militaryUtil.getNoWarNumber();
-            // if not occupied and nowarnumber gt 0
-            // then add war number
-            if (!occupied.get() && noWarNumber > 0) {
-                militaryUtil.addWarNumber(noWarNumber);
+
+            // if not occupied then return
+            if (!occupied.get()) {
+
+                // if noWarNumber gt 0 then addWarNumber
+                if (noWarNumber > 0) {
+                    militaryUtil.addWarNumber(noWarNumber);
+                }
+
+                count.set(0);
                 return;
             }
 
@@ -98,7 +118,7 @@ public class MilitaryScheduled {
                 } else if (teamNumber < 2) {
                     militaryUtil.addTeamNumber(2 - teamNumber);
                 }
-            } else if (demonNumber > 2000) {
+            } else  {
 
                 if (memberNumber > 11) {
                     militaryUtil.subMemberNumber(memberNumber - 11);
@@ -112,25 +132,21 @@ public class MilitaryScheduled {
                     militaryUtil.addTeamNumber(4 - teamNumber);
                 }
 
-                // set true
-//                occupied.set(true);
-            } else {
-                // getPopulation is 勘探者
-                int population = populationUtil.getPopulation("勘探者");
-                // change population to 10
-                // if population gt 10 then sub population to 10
-                // if population lt 10 then add population to 10
-                if (population > 10) {
-                    populationUtil.subPopulation("勘探者", population - 10);
-                } else if (population < 10) {
-                    populationUtil.addPopulation("勘探者", 10 - population);
+                if (demonNumber < 2000) {
+                    // getPopulation is 勘探者
+                    int population = populationUtil.getPopulation("勘探者");
+                    // change population to 10
+                    // if population gt 10 then sub population to 10
+                    // if population lt 10 then add population to 10
+                    if (population > 10) {
+                        populationUtil.subPopulation("勘探者", population - 10);
+                    } else if (population < 10) {
+                        populationUtil.addPopulation("勘探者", 10 - population);
+                    }
+
+                    occupied.set(false);
                 }
-
-
-                // set true
-                occupied.set(true);
             }
-
         }
 
     }

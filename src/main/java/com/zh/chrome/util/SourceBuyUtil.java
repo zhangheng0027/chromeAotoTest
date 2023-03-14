@@ -1,6 +1,7 @@
 package com.zh.chrome.util;
 
 import org.junit.jupiter.api.Order;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -57,7 +58,9 @@ public class SourceBuyUtil {
             util.changeTab("资源", "市场");
             String path = "/html/body/div[2]/div/div[2]/div/div/section/div[5]/div/div/section/div[1]/div[1]/div/div/div/div/div/input";
             boolean f = (boolean) util.handle(path, (element) -> {
-                element.clear();
+
+                // element send ctrl + a
+                element.sendKeys(Keys.LEFT_CONTROL, "a");
                 element.sendKeys(String.valueOf(number));
                 util.sleep(330);
             });
@@ -87,6 +90,7 @@ public class SourceBuyUtil {
         // input number
         // lock
         synchronized (GameLock.LOCK_Handle) {
+            util.changeTab("资源", "市场");
             inputNumber(number);
             util.handle(sourceMaps.get(name) + "/span[2]", (element) -> {
                 util._clickAndSleep(element, 330);
